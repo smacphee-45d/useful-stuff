@@ -1,14 +1,14 @@
-#Alertmanager Webhook
+# Alertmanager Webhook
 
 This webhook recieves an alert from alertmanager and triggers a script. It utilizes Redis-Sentinel to allow multiple webhook servers to exist simulatenous and be available. Distributed locks are then used to ensure that only one webhook actually runs the script. 
 
-#Prereqs 
+# Prereqs 
 
 - Redis-Sentinel 
 - Alertmanager 
 - Python3
 
-#Installation 
+# Installation 
 
 - install Redis/Redis-Sentinel 
 - modify alertmanager to with webhook recievers
