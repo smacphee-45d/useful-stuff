@@ -6,24 +6,27 @@ import re
 
 def main():
     #pass hostname command arg and use in json function
+    if len(sys.argv) != 2:
+        print("Only one hostname can be provided")
+        sys.exit(1)
     hostname = sys.argv[1]
+    if " " in hostname:
+        print("Spaces cannot be in hostnames")
+        sys.exit(1)
     child_osds = process_json(hostname)
     #remove each found osd child from crushmap
     for osd, weight in child_osds.items():
         command = ["ceph", "osd", "crush", "remove", f"osd.{osd}"]
-        result = subprocess.run(command, capture_output=True, text=True)
-        print(f'Command output: {result.stdout}')
+        subprocess.run(command, capture_output=True, text=True)
     #wait for all PGs to be in an acceptable state
     wait_for_pg()
     print("PGs back to normal")
     #readd all OSDs at original weights
     for osd, weight in child_osds.items():
         command = ["ceph", "osd", "crush", "add", f"osd.{osd}", str(weight), "root=default", f"host={hostname}"]
-        result = subprocess.run(command, capture_output=True, text=True)
-        print(f'Command output: {result.stdout}')
+        subprocess.run(command, capture_output=True, text=True)
         command = ["ceph", "osd", "crush", "set-device-class", "hdd", f"osd.{osd}"]
-        result = subprocess.run(command, capture_output=True, text=True)
-        print(f'Command output: {result.stdout}')
+        subprocess.run(command, capture_output=True, text=True)
 
 #pull OSDs and OSD weights from ceph osd tree by hostname
 def process_json(hostname):
