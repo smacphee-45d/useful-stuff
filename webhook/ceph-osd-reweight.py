@@ -33,11 +33,16 @@ def process_json(hostname):
     osd_tree = subprocess.check_output(["ceph", "osd", "tree", "--format", "json-pretty"], stderr=subprocess.STDOUT).decode('utf-8')
     json_data = json.loads(osd_tree)
     osd_weights = {}
+    host_found = False
     for node in json_data['nodes']:
         if node['type'] == 'host' and node['name'] == hostname:
             children = node['children']
+            host_found = True
         elif node['type'] == 'osd' and node['id'] in children:
             osd_weights[node['id']] = node['crush_weight']
+    if not host_found:
+        print(f"The proided hostname is not found in ceph osd tree")
+        sys.exit(1)
     return osd_weights
 
 #wait for all PGs to not be active+undersized only
